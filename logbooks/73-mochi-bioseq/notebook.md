@@ -59,7 +59,7 @@ directory, then run `run.py` with these arguments:
 ```bash
 uv run --no-project --with google-genai --with anthropic --with openai \
   --with python-dotenv --with pandas --with numpy --with httpx \
-  --with transformers --with biopython --with gemmi --with scipy --with matplotlib \
+  --with transformers --with jinja2 --with biopython --with gemmi --with scipy --with matplotlib \
   python logbooks/73-mochi-bioseq/run.py \
   --upstream /path/to/LLM-bioseq-probe --endpoint-file /private/endpoint.txt \
   --tokenizer /path/to/pinned-tokenizer --output /path/to/results \
@@ -79,3 +79,7 @@ The live model identity matches prior Mochi SFT evaluations in issue 11723.
 Published comparator scores will be distinguished from newly measured Mochi
 scores. No model result is available yet. The next step is a small prompt and
 parser smoke check before the complete suite.
+
+Publication note: the current account has read access but no push access to the
+shared logbooks repository. Preserve the research branch in its GitHub fork and
+link it from the coordinating issue.
