@@ -144,9 +144,12 @@ def contacts(upstream: Path, output: Path, saved: list[dict], suite: str) -> dic
         result[name] = {
             "asked": len(group),
             "valid_maps": len(valid),
+            "proteins_with_long_range_predictions": int((valid.n_pred > 0).sum()) if "n_pred" in valid else 0,
             "predicted_long_range": n_pred,
             "correct_long_range": correct,
             "precision": correct / n_pred if n_pred else None,
+            "expected_random": float((valid.n_pred * valid.baseline).sum()) if "n_pred" in valid else 0.0,
+            "expected_separation_matched": float(valid.expected_sep.sum()) if "expected_sep" in valid else 0.0,
         }
     return result
 
