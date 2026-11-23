@@ -44,17 +44,28 @@ def protein_summary(frame: pd.DataFrame) -> dict:
     pair_keys = ["accession", "cut"]
     paired = frame.groupby(pair_keys).valid.transform("all")
     paired_fam = frame[paired].groupby(["pfam", "condition"]).hit.mean().unstack().dropna()
+    real = valid[valid.condition == "real"].copy()
+    positions = [f"p{k}" for k in range(probe.K)]
+    for k, name in enumerate(positions):
+        real[name] = [k < len(d.pred) and d.pred[k] == d.target[k] for d in real.itertuples()]
+    expected = float((real.groupby("pfam")[positions].mean().prod(axis=1) * real.groupby("pfam").size()).sum())
+    observed = int(real.all10.sum())
+    shuffled_runs = int(valid[valid.condition == "shuffled"].all10.sum())
+    estimate = interval((fam.real - fam.shuffled).to_numpy())
     return {
         "questions": len(frame),
         "valid": len(valid),
         "families": len(fam),
         "real": float(valid[valid.condition == "real"].hit.mean() * 100),
         "shuffled": float(valid[valid.condition == "shuffled"].hit.mean() * 100),
-        **interval((fam.real - fam.shuffled).to_numpy()),
+        **estimate,
+        "H1_pass": estimate["p_one_sided"] < 0.001 and estimate["low"] > 10,
         "nonanswers_wrong": interval((all_fam.real - all_fam.shuffled).to_numpy()),
         "both_answers_valid": interval((paired_fam.real - paired_fam.shuffled).to_numpy()),
-        "exact10_real": int(valid[(valid.condition == "real")].all10.sum()),
-        "exact10_shuffled": int(valid[(valid.condition == "shuffled")].all10.sum()),
+        "exact10_real": observed,
+        "exact10_shuffled": shuffled_runs,
+        "exact10_expected_independent_positions": expected,
+        "H3_pass": observed >= 10 and (expected == 0 or observed / expected > 100) and shuffled_runs == 0,
         "positive_families": int((fam.real > fam.shuffled).sum()),
         "nonanswers_real": int((~frame[frame.condition == "real"].valid).sum()),
         "nonanswers_shuffled": int((~frame[frame.condition == "shuffled"].valid).sum()),
@@ -101,6 +112,7 @@ def contacts(upstream: Path, output: Path, saved: list[dict]) -> dict:
     namespace = {"np": np, "re": re, "hypergeom": hypergeom}
     exec(compile(definitions, "upstream_contact_functions", "exec"), namespace)
     truth = json.loads((output / "contact_truth.json").read_text())
+    proteins = pd.read_csv(upstream / "data/contact_map_proteins.tsv", sep="\t").set_index("pdb")
     rows = []
     for d in saved:
         t = truth[d["protein"]]
@@ -109,7 +121,7 @@ def contacts(upstream: Path, output: Path, saved: list[dict]) -> dict:
         row = {
             "protein": d["protein"],
             "pdb": d["pdb"],
-            "group": "famous" if t["set"] == "famous" else "recent",
+            "group": "famous" if t["set"] == "famous" else proteins.loc[t["pdb"], "group"],
             "valid": pred is not None,
             "note": note,
         }
@@ -119,7 +131,9 @@ def contacts(upstream: Path, output: Path, saved: list[dict]) -> dict:
     frame = pd.DataFrame(rows)
     frame.to_csv(output / "contact_scores.tsv", sep="\t", index=False)
     result = {}
-    for name, group in frame.groupby("group"):
+    groups = dict(tuple(frame.groupby("group")))
+    groups["all recent"] = frame[frame.group != "famous"]
+    for name, group in groups.items():
         valid = group[group.valid]
         n_pred = int(valid.n_pred.sum()) if "n_pred" in valid else 0
         correct = int(valid.n_correct.sum()) if "n_correct" in valid else 0
@@ -146,6 +160,15 @@ def main():
         if suite in PROTEIN_SETS:
             results[suite] = protein_summary(frame)
             frames[suite] = frame
+            seq = pd.read_csv(args.upstream / "data" / PROTEIN_SETS[suite], sep="\t")
+            if "family_proteins" in seq:
+                fam = frame[frame.valid].groupby(["pfam", "condition"]).hit.mean().unstack().dropna()
+                size = seq.groupby("pfam").family_proteins.first().reindex(fam.index)
+                rho, pvalue = spearmanr(fam.real - fam.shuffled, np.log10(size))
+                p_one = pvalue / 2 if rho > 0 else 1 - pvalue / 2
+                results[suite]["family_size_rho"] = float(rho)
+                results[suite]["H2_p_one_sided"] = float(p_one)
+                results[suite]["H2_pass"] = bool(rho > 0 and p_one < 0.01)
         elif suite == "recall":
             results[suite] = {
                 "questions": len(frame),
@@ -168,6 +191,9 @@ def main():
                     "exact20_real": int(valid[valid.condition == "real"].all20.sum()),
                     "exact20_shuffled": int(valid[valid.condition == "shuffled"].all20.sum()),
                 }
+                cell = results[suite][f"{species} {region}"]
+                cell["D1_pass"] = cell["p_one_sided"] < 0.001 and cell["low"] > 5
+                cell["D2_pass"] = cell["exact20_real"] >= 3 and cell["exact20_shuffled"] == 0
         else:
             results[suite] = contacts(args.upstream, args.output, saved)
         results[suite]["transport_attempts"] = sum(len(d["attempts"]) for d in saved)
