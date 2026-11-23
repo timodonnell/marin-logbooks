@@ -73,7 +73,8 @@ def protein_summary(frame: pd.DataFrame) -> dict:
 
 
 def audit_suite(upstream: Path, output: Path, suite: str) -> tuple[list[dict], list]:
-    saved = records(output / f"{suite}.jsonl")
+    path = output / f"{suite}.jsonl"
+    saved = records(path if path.exists() else path.with_suffix(".jsonl.gz"))
     expected = questions(upstream, suite, output)
     by_key = {q.key: q for q in expected}
     assert len(saved) == len(expected) == len({d["key"] for d in saved}), suite
