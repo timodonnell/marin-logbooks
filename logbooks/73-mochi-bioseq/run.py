@@ -284,7 +284,8 @@ def main():
     assert len(previous) == len({r["key"] for r in previous}), "duplicate records"
     done = {r["key"] for r in previous}
     todo = [q for q in items if q.key not in done]
-    with httpx.Client(timeout=600) as client:
+    request_timeout = 1800 if args.suite in CONTACT_SUITES else 600
+    with httpx.Client(timeout=request_timeout) as client:
         before = models_snapshot(client, base_url)
         assert before["data"][0]["id"] == MODEL
         (args.output / f"{args.suite}-models-start.json").write_text(json.dumps(before, indent=2))
