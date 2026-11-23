@@ -340,6 +340,72 @@
     "thinking_replies": 0,
     "completion_tokens": 759318
   },
+  "contact": {
+    "clean": {
+      "asked": 2,
+      "valid_maps": 0,
+      "proteins_with_long_range_predictions": 0,
+      "predicted_long_range": 0,
+      "correct_long_range": 0,
+      "precision": null,
+      "expected_random": 0.0,
+      "expected_separation_matched": 0.0
+    },
+    "famous": {
+      "asked": 6,
+      "valid_maps": 1,
+      "proteins_with_long_range_predictions": 0,
+      "predicted_long_range": 0,
+      "correct_long_range": 0,
+      "precision": null,
+      "expected_random": 0.0,
+      "expected_separation_matched": 0.0
+    },
+    "new sequence, PDB relative": {
+      "asked": 6,
+      "valid_maps": 0,
+      "proteins_with_long_range_predictions": 0,
+      "predicted_long_range": 0,
+      "correct_long_range": 0,
+      "precision": null,
+      "expected_random": 0.0,
+      "expected_separation_matched": 0.0
+    },
+    "old sequence": {
+      "asked": 15,
+      "valid_maps": 0,
+      "proteins_with_long_range_predictions": 0,
+      "predicted_long_range": 0,
+      "correct_long_range": 0,
+      "precision": null,
+      "expected_random": 0.0,
+      "expected_separation_matched": 0.0
+    },
+    "old sequence, PDB relative": {
+      "asked": 23,
+      "valid_maps": 3,
+      "proteins_with_long_range_predictions": 0,
+      "predicted_long_range": 0,
+      "correct_long_range": 0,
+      "precision": null,
+      "expected_random": 0.0,
+      "expected_separation_matched": 0.0
+    },
+    "all recent": {
+      "asked": 46,
+      "valid_maps": 3,
+      "proteins_with_long_range_predictions": 0,
+      "predicted_long_range": 0,
+      "correct_long_range": 0,
+      "precision": null,
+      "expected_random": 0.0,
+      "expected_separation_matched": 0.0
+    },
+    "transport_attempts": 52,
+    "truncated_replies": 40,
+    "thinking_replies": 0,
+    "completion_tokens": 1305013
+  },
   "contact_list": {
     "clean": {
       "asked": 2,

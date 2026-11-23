@@ -1,0 +1,38 @@
+{
+  "confirm": {
+    "cases": 6680,
+    "prompt_hashes_targets_and_metadata_match": true
+  },
+  "raw": {
+    "cases": 6680,
+    "prompt_hashes_targets_and_metadata_match": true
+  },
+  "small": {
+    "cases": 3600,
+    "prompt_hashes_targets_and_metadata_match": true
+  },
+  "d_set": {
+    "cases": 560,
+    "prompt_hashes_targets_and_metadata_match": true
+  },
+  "pilot": {
+    "cases": 2220,
+    "prompt_hashes_targets_and_metadata_match": true
+  },
+  "dna": {
+    "cases": 9000,
+    "prompt_hashes_targets_and_metadata_match": true
+  },
+  "recall": {
+    "cases": 158,
+    "prompt_hashes_targets_and_metadata_match": true
+  },
+  "contact": {
+    "cases": 52,
+    "prompt_hashes_targets_and_metadata_match": true
+  },
+  "contact_list": {
+    "cases": 52,
+    "prompt_hashes_targets_and_metadata_match": true
+  }
+}

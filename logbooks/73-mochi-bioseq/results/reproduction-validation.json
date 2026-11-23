@@ -1,0 +1,7 @@
+{
+  "all_nine_suite_summaries_identical": true,
+  "all_five_score_tables_identical_ignoring_trailing_whitespace": true,
+  "completed_cases": 29002,
+  "input_format": "gzip-compressed original response records",
+  "analysis_revision": "77abdc0f92cdbebcdbc40b9d39ba49198cb823a7"
+}

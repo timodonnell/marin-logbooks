@@ -6,7 +6,7 @@ related_issues: ["https://github.com/marin-community/marin/issues/11723"]
 research_branch: "codex/73-mochi-bioseq"
 marin_base_revision: "4aab2cff9e0a7d105928ba0bdc575ee5c43c6610"
 archive_template_revision: "fc1cb30da0967f6ab78ffd47444ed9144f50cba9"
-status: active
+status: complete
 ---
 
 # Mochi SFT on the published protein-sequence probes
@@ -39,8 +39,9 @@ it is not absolute sequence accuracy. Other models were not rerun. Their
 scores come from the pinned upstream result tables. Prompting formats differ,
 as labeled, and overlapping intervals do not establish a ranking.
 
-Protein-continuation, DNA, recall and contact-pair-list results are complete.
-The contact-grid evaluation is still running.
+All nine suites are complete: 29,002 scored question cases. DNA produces no
+exact 20-base continuations; contact pair lists perform near their random
+baseline, and the grid format yields no usable long-range contact predictions.
 
 ![Main benchmark comparison; orange points are newly measured Mochi results.](results/comparison.png)
 
@@ -60,6 +61,10 @@ published comparator outputs. Run instructed chat and untemplated FASTA
 continuation on the main set. Supplement with the smaller-family set,
 August-2026 proteins, pilot set, 158 published recall cases, DNA windows and
 contact maps. The August set is not established to be after Mochi's cutoff.
+
+Pfam groups related protein domains by sequence similarity. A domain annotation
+marks the segment of a full protein assigned to that family; the shown prefix
+can include sequence before that segment.
 
 The main set has four proteins from each of 167 Pfam families and five fixed
 cuts per protein, inside its annotated domain. Each cut is queried on both the
@@ -109,6 +114,10 @@ incorrect predictions. Report the main score under the published exclusion rule
 and with non-answers counted as incorrect.
 
 ## Reproduction
+
+Score recomputation from the public response bundle requires no Marin access.
+Fresh inference requires access to Marin's serving infrastructure and the
+step-400407 checkpoint; this record does not publish the model weights.
 
 Clone the upstream repository at the revision above. Download the pinned
 tokenizer with `hf download`. Supply an endpoint URL ending in `/v1` in a local
@@ -206,13 +215,17 @@ at least 100 PDB structures; “obscure” means a domain-of-unknown-function
 family with no PDB structure and at most three Europe PMC hits for its Pfam
 accession. These are the authors' proxies for literature attention.
 
-| Supplementary chat set | Questions | Gap, percentage points | 95% CI |
-| --- | ---: | ---: | --- |
-| Smaller families | 3600 | +0.57 | −1.46 to +2.61 |
-| August-2026 proteins | 560 | −7.22 | −13.57 to −1.12 |
-| Main proteins restricted to the same 31 families | 1240 | +2.02 | −1.07 to +5.08 |
-| Well-studied pilot families | 1140 | +8.59 | +4.06 to +13.19 |
-| Obscure pilot families | 1080 | −1.59 | −4.38 to +1.08 |
+Each row below uses the main benchmark's equal family weighting, independent
+non-answer exclusions and family bootstrap. Family counts are the independent
+units resampled for the confidence intervals.
+
+| Supplementary chat set | Families | Questions | Gap, percentage points | 95% CI |
+| --- | ---: | ---: | ---: | --- |
+| Smaller families | 90 | 3600 | +0.57 | −1.46 to +2.61 |
+| August-2026 proteins | 31 | 560 | −7.22 | −13.57 to −1.12 |
+| Main proteins restricted to the same 31 families | 31 | 1240 | +2.02 | −1.07 to +5.08 |
+| Well-studied pilot families | 19 | 1140 | +8.59 | +4.06 to +13.19 |
+| Obscure pilot families | 18 | 1080 | −1.59 | −4.38 to +1.08 |
 
 Across the main and smaller-family sets (257 families), the correlation of
 the accuracy gap with log family size is Spearman ρ = 0.050, two-sided
@@ -253,7 +266,8 @@ including 190 that reached the 4000-token cap.
 
 None passes the published D1 rule (one-sided sign-flip `p < 0.001` and lower
 95% confidence bound above five percentage points), and there are no exact
-20-base continuations in either condition, so none passes D2. Human coding
+20-base continuations in either condition, so none passes D2 (at least three
+exact real-prefix continuations and none on shuffled controls). Human coding
 DNA has a positive interval, but these nine intervals are not adjusted for
 multiple comparisons. For comparison, the published Opus 5.5 human-coding gap
 is +30.4 points (+24.4 to +36.4), with 25 exact 20-base continuations; its
@@ -340,3 +354,51 @@ The grid results are pending. The authors' novelty categories, including
 Mochi's unverified training cutoff. Here “clean” means no earlier PDB relative
 at an E-value below 0.001, with sequence first public on or after July 1, 2026
 in the authors' UniProtKB, UniParc and organism-record checks.
+
+
+### 2026-11-23 — Grid results and final audit
+
+All 52 grid requests completed. Only four responses satisfy the strict matrix
+format: one of six famous proteins and three of 46 recent structures. All four
+contain zero long-range contact predictions, so their long-range precision is
+undefined, not zero. The other 48 are excluded as malformed matrices. Forty
+responses reached the 32000-token cap. This format does not yield a usable
+long-range structural prediction from Mochi under the published protocol.
+
+The completed run contains 29,002 question cases across nine suites, with no
+exhausted transport retries. This count excludes setup, invalidated double-BOS
+runs, canceled in-flight calls and transport retries. There are 30 recorded
+retries among scored cases: 16 raw-continuation retries and 14 contact-list
+HTTP 504 retries. The full audit checks unique question coverage, targets,
+metadata, regenerated prompt hashes and parser outputs. Model identity
+projections agree at every retained start and end snapshot. This checks the
+server's reported identity, not an immutable deployment guarantee.
+
+The main conclusion is limited to this checkpoint with thinking disabled and
+the stated token budgets. Mochi shows a modest raw-continuation advantage over
+shuffled sequences and occasional long exact recall, but it is far below the
+published leading Claude and protein-language-model scores. The DNA and
+contact probes do not add evidence of broad biological sequence or structural
+prediction ability. Comparator models were not rerun; supplementary intervals
+are not corrected for multiple comparisons, and Mochi's cutoff is unknown.
+
+
+The compressed-response reproduction produces identical summaries for all nine
+suites and identical score tables (ignoring trailing whitespace). Original
+responses, contact truth, public identity projections, per-suite manifests and
+setup/resumption evidence are preserved in the
+[response bundle](https://github.com/timodonnell/marin-logbooks/releases/download/mochi-bioseq-73-2026-11-23/mochi-bioseq-step400407-2026-11-23.tar.gz).
+
+Bundle SHA-256: `26c9a98a568fc34b6b1612f6a4d7743a4a9894c4d7ab47b2cb619c2aefa0446c`.
+The bundle contains an internal `SHA256SUMS` file. Extract it and pass its
+`results` directory to `analyze.py` with the same dependency command as above:
+
+```bash
+python logbooks/73-mochi-bioseq/analyze.py \
+  --upstream /path/to/LLM-bioseq-probe \
+  --output /path/to/mochi-bioseq-step400407/results
+```
+
+This reads compressed responses directly and requires no model endpoint.
+The analysis source is preserved at
+[77abdc0f92](https://github.com/timodonnell/marin-logbooks/tree/77abdc0f92cdbebcdbc40b9d39ba49198cb823a7/logbooks/73-mochi-bioseq).
