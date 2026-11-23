@@ -1,0 +1,38 @@
+[
+  {
+    "id": "K7C4V8:336",
+    "pfam": "PF00019",
+    "organism": "Pan troglodytes",
+    "exact_run": 62,
+    "match_in_shown_prefix": false,
+    "prefix_echo_removed": 0,
+    "match_sha256": "2841b924927a10b1c64112689a5a35445c898c4a16067809ceb6567a90089f45"
+  },
+  {
+    "id": "K7C4V8:330",
+    "pfam": "PF00019",
+    "organism": "Pan troglodytes",
+    "exact_run": 68,
+    "match_in_shown_prefix": false,
+    "prefix_echo_removed": 0,
+    "match_sha256": "b2b380224c7a5da503849f50350ccb64c02a41daf221342ad8673ee90b371b35"
+  },
+  {
+    "id": "A0A1S3ERL3:330",
+    "pfam": "PF00019",
+    "organism": "Dipodomys ordii",
+    "exact_run": 68,
+    "match_in_shown_prefix": false,
+    "prefix_echo_removed": 0,
+    "match_sha256": "b2b380224c7a5da503849f50350ccb64c02a41daf221342ad8673ee90b371b35"
+  },
+  {
+    "id": "A0A8C2LMQ0:101",
+    "pfam": "PF00339",
+    "organism": "Cricetulus griseus",
+    "exact_run": 266,
+    "match_in_shown_prefix": false,
+    "prefix_echo_removed": 41,
+    "match_sha256": "ac0272fca2c5acb517ecb49793cb38cfe4dfb307afffeb3422e474d7fd88c00b"
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "reason": "Separating the final grid probe from the sequential launcher also ended its recall child during terminal-session cleanup. Resume with identical runner, settings and retained replies.",
+  "retained_replies": 77,
+  "runner_sha256": "b5aa058eb1512a78023c7ed9806de9b655e2d8609e45cd1349af60205c489c46"
+}

@@ -1,0 +1,8 @@
+{
+  "reason": "Extend non-streaming client timeout from 600 to 1800 seconds for the 32000-token contact budget; request payloads unchanged.",
+  "retained_replies": 23,
+  "initial_runner_revision": "80ebf04db2",
+  "resumed_runner_revision": "1b65240b2d",
+  "initial_directory": "run-26493a8",
+  "resumed_directory": "run-1b65240-contact-list"
+}

@@ -18,6 +18,9 @@ and **+3.28 points in raw FASTA continuation** (+1.89 to +4.65). This places
 Mochi near the study's lower-scoring general language models, well below the
 published Opus 5.5, Fable 5.2 and strongest protein-language-model results.
 Neither Mochi format produces an exact 10-residue continuation on the main set.
+A separate, selected recall probe finds four cases with at least 50 exact
+residues (longest 266), compared with 46 for Opus 5.5; three Mochi cases share
+the same or overlapping protein tail.
 
 | Model and format | Gap, percentage points | 95% CI | Source |
 | --- | ---: | --- | --- |
@@ -36,8 +39,8 @@ it is not absolute sequence accuracy. Other models were not rerun. Their
 scores come from the pinned upstream result tables. Prompting formats differ,
 as labeled, and overlapping intervals do not establish a ranking.
 
-Protein-continuation results are complete. Longer recall, DNA and contact-map
-evaluations are still running.
+Protein-continuation, DNA, recall and contact-pair-list results are complete.
+The contact-grid evaluation is still running.
 
 ![Main benchmark comparison; orange points are newly measured Mochi results.](results/comparison.png)
 
@@ -119,13 +122,15 @@ uv run --no-project --with google-genai --with anthropic --with openai \
   python logbooks/73-mochi-bioseq/run.py \
   --upstream /path/to/LLM-bioseq-probe --endpoint-file /private/endpoint.txt \
   --tokenizer /path/to/pinned-tokenizer --output /path/to/results \
-  --suite confirm --workers 8 --run
+  --suite confirm --workers 32 --run
 ```
 
 Omit `--run` for input validation without inference. Other suite names are
 `raw`, `small`, `d_set`, `pilot`, `recall`, `dna`, `contact`, and `contact_list`.
-Keep each output directory for one source revision and request configuration.
-The runner resumes existing question keys without overwriting records.
+Keep each suite's output file and manifest together. Resuming requires the same
+runner and request settings; a directory containing several suites retains each
+suite's own provenance. The runner resumes existing question keys without
+overwriting records. Raw continuation used eight workers; other suites used 32.
 
 ## Entries
 
@@ -185,9 +190,21 @@ Neither passes H2 (positive Spearman correlation between the gap and log10
 Pfam family size on the main 167 families, one-sided `p < 0.01`) or H3 (at least 10 exact
 continuations, over 100 times the independent-position expectation, with none
 on shuffled controls). These are the published decision rules applied to Mochi,
-not newly preregistered hypotheses. Family size is the upstream table's
+not newly preregistered hypotheses. For H3, estimate each of the ten positions'
+accuracy within a family, multiply those ten probabilities, multiply by the
+number of valid real-prefix answers in that family, then sum over families.
+This is the expected exact-10 count if positions were independent.
+Family size is the upstream table's
 `family_proteins` count of members in the biological family, not the four
 proteins sampled into the benchmark.
+
+The smaller-family set has 90 families containing 20–300 known proteins each.
+The August set contains proteins first public in RefSeq on August 2–27, 2026,
+whose closest pre-August relatives are 34–49% identical according to the
+authors' selection. In the pilot, “well-studied” means a named family with
+at least 100 PDB structures; “obscure” means a domain-of-unknown-function
+family with no PDB structure and at most three Europe PMC hits for its Pfam
+accession. These are the authors' proxies for literature attention.
 
 | Supplementary chat set | Questions | Gap, percentage points | 95% CI |
 | --- | ---: | ---: | --- |
@@ -211,3 +228,115 @@ runner is preserved at `43f074efe4`; the corrected chat runner is at
 `26493a821c`. Contact-pair-list support is added at `80ebf04db2` without changing
 protein or DNA requests. Per-suite manifests identify the executed runner by
 SHA-256, tokenizer revision, input hashes and package versions.
+
+
+### 2026-11-23 — DNA and long recall complete
+
+The DNA probe uses 4500 windows: 500 from each of nine species/region cells,
+with a real and a dinucleotide-preserving shuffled version of each window.
+The prompt shows 200 bases and asks for the next 20. As upstream, score the
+first base and estimate the paired real-minus-shuffled gap only where both
+answers parse; bootstrap windows within each cell. There are 9000 responses,
+including 190 that reached the 4000-token cap.
+
+| DNA cell | Paired windows | Gap, percentage points | 95% CI |
+| --- | ---: | ---: | --- |
+| Bacteria/archaea, coding | 452 | −0.22 | −5.97 to +5.53 |
+| Human, coding | 457 | +6.78 | +1.09 to +12.47 |
+| Human, intergenic | 460 | +1.52 | −4.57 to +7.61 |
+| Human, intron | 459 | −3.05 | −8.71 to +2.61 |
+| Human, promoter | 452 | −3.10 | −8.63 to +2.22 |
+| Mouse, coding | 457 | +4.16 | −1.75 to +10.07 |
+| Mouse, intergenic | 459 | −1.09 | −6.75 to +4.79 |
+| Mouse, intron | 456 | 0.00 | −5.92 to +5.92 |
+| Mouse, promoter | 462 | −0.43 | −6.28 to +5.19 |
+
+None passes the published D1 rule (one-sided sign-flip `p < 0.001` and lower
+95% confidence bound above five percentage points), and there are no exact
+20-base continuations in either condition, so none passes D2. Human coding
+DNA has a positive interval, but these nine intervals are not adjusted for
+multiple comparisons. For comparison, the published Opus 5.5 human-coding gap
+is +30.4 points (+24.4 to +36.4), with 25 exact 20-base continuations; its
+mouse-coding gap is +28.66 (+23.05 to +34.27), with five exact continuations.
+
+Long recall uses the same 158 pilot cut points reported for the comparator
+models. The authors selected these because at least one tested model had
+previously continued ten residues correctly; selection is fixed independently
+of Mochi. Ask for 200 residues or the remainder if the protein ends, with an
+8000-token limit. Count consecutive correct residues immediately after the
+cut, following the original parser's removal of any echoed prefix suffix.
+The score can exceed 200 if the model writes more than requested.
+
+| Model | At least 20 residues | At least 50 | At least 100 | At least 200 | Longest |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Mochi SFT, this run | 4 | 4 | 1 | 1 | 266 |
+| Claude Opus 5.5, published | 71 | 46 | 27 | 15 | 314 |
+| Gemini 4 Carbon, published | 74 | 42 | 23 | 16 | 201 |
+| GPT-5.5, published | 0 | 0 | 0 | 0 | 2 |
+
+Mochi's four successes are not four independent proteins. Three cover the
+same or overlapping tail in two PF00019 proteins: `K7C4V8` at cuts 330 and
+336, and `A0A1S3ERL3` at cut 330. They reproduce 68, 62 and 68 residues,
+respectively, through the end of the protein. The two 68-residue tails are
+identical. The fourth is `A0A8C2LMQ0`, a Chinese hamster PF00339 protein,
+at cut 101: 266 consecutive residues match before the first mismatch.
+The response first echoes 41 residues from the shown prefix; those are removed
+and are not counted in the 266. All four exact continuations occur literally
+in the saved response and are absent from the shown prefix.
+
+This is evidence of occasional long exact recall, consistent with sequence
+memorization, despite weak average performance on the main benchmark. It does
+not identify which training source supplied the sequence. The selected recall
+set is enriched for cases other models could recall, so 4/158 is not an
+estimate of the fraction of arbitrary proteins Mochi has memorized. Of 158
+responses, 154 parse and 93 reach the 8000-token limit.
+
+The contact-list client timeout was increased from 600 to 1800 seconds to
+accommodate its 32000-token allowance. The 23 completed replies from runner
+`80ebf04db2` were preserved and the remaining requests used `1b65240b2d`;
+request payloads were unchanged. Separating the final grid run from the
+sequential launcher also ended its recall child during terminal cleanup.
+Recall resumed with the identical runner and settings, retaining all 77
+completed replies. The archive records both resumptions and the retained
+responses; canceled in-flight calls are not included among completed cases.
+
+
+### 2026-11-23 — Contact pair lists complete
+
+The structural probe asks for contacts from the sequence alone, using 52
+proteins: six famous structures and 46 recent structures. A true contact has
+C-beta atoms (C-alpha for glycine) less than 8 Å apart. The headline score
+counts predicted contacts between residues separated by at least 24 positions
+in the sequence. Pair-list parsing and scoring reuse the original functions:
+ignore pairs outside the sequence or separated by fewer than six positions,
+deduplicate pairs, and score the upper triangle. A parsed list is considered
+valid even if some lines are rejected. The alternative grid format requires
+exactly an L-by-L binary matrix for a protein of length L, with no padding or
+cropping.
+
+All 52 Mochi lists parse. Their long-range predictions are close to chance:
+
+| Group | Correct / predicted contacts | Precision | Expected correct, random | Expected correct, separation-matched |
+| --- | ---: | ---: | ---: | ---: |
+| Six famous proteins | 93 / 1502 | 6.19% | 88.30 | 88.64 |
+| 46 recent structures | 3075 / 114734 | 2.68% | 3133.29 | 3131.21 |
+| Two author-labeled “clean” cases, a subset of recent structures | 115 / 6342 | 1.81% | 115.41 | 113.97 |
+
+The random expectation preserves each protein's number of predicted contacts
+and uses its true long-range contact density. The separation-matched expectation
+also preserves each predicted pair's sequence separation. Mochi labels 114734
+of 216244 possible long-range pairs as contacts on recent structures (53.1%),
+compared with only 964 calls in the published Opus 5.5 lists. Opus gets 119 of
+those correct (12.34%; random expectation 29.44), and Fable 5.2 gets 319/1775
+correct (17.97%; random expectation 54.22). These methods choose different
+numbers of pairs; precision alone is not a comparison at equal recall or an
+equal prediction budget. Mochi's near-baseline performance gives no evidence
+of useful structural prediction in this configuration.
+
+Nine replies reach the 32000-token cap. Fourteen requests receive a gateway
+HTTP 504 and succeed on the recorded second attempt; none exhausts retries.
+The grid results are pending. The authors' novelty categories, including
+“clean,” are retained for comparison but do not establish novelty relative to
+Mochi's unverified training cutoff. Here “clean” means no earlier PDB relative
+at an E-value below 0.001, with sequence first public on or after July 1, 2026
+in the authors' UniProtKB, UniParc and organism-record checks.

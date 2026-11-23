@@ -1,0 +1,35 @@
+{
+  "initial_start": {
+    "captured_at": "2026-11-23T22:25:27.175263+00:00",
+    "models": [
+      {
+        "id": "hero-sft-step400407",
+        "checkpoint_export": "hero-sft-fullab-step393k-v2/step-400407/2af3f828aa-cpu-a1",
+        "root_sha256": "dc0dd09be9cb10e31a4bbcdd6b5da3a4f571e6d32e41449ebaac4fd14cd1d4c3",
+        "max_model_len": 262144
+      }
+    ]
+  },
+  "resumed_start": {
+    "captured_at": "2026-11-23T22:28:53.574723+00:00",
+    "models": [
+      {
+        "id": "hero-sft-step400407",
+        "checkpoint_export": "hero-sft-fullab-step393k-v2/step-400407/2af3f828aa-cpu-a1",
+        "root_sha256": "dc0dd09be9cb10e31a4bbcdd6b5da3a4f571e6d32e41449ebaac4fd14cd1d4c3",
+        "max_model_len": 262144
+      }
+    ]
+  },
+  "end": {
+    "captured_at": "2026-11-23T22:47:16.917428+00:00",
+    "models": [
+      {
+        "id": "hero-sft-step400407",
+        "checkpoint_export": "hero-sft-fullab-step393k-v2/step-400407/2af3f828aa-cpu-a1",
+        "root_sha256": "dc0dd09be9cb10e31a4bbcdd6b5da3a4f571e6d32e41449ebaac4fd14cd1d4c3",
+        "max_model_len": 262144
+      }
+    ]
+  }
+}
