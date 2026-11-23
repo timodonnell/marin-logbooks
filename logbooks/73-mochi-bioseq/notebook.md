@@ -83,3 +83,24 @@ parser smoke check before the complete suite.
 Publication note: the current account has read access but no push access to the
 shared logbooks repository. Preserve the research branch in its GitHub fork and
 link it from the coordinating issue.
+
+### 2026-11-23 — Tokenization correction before scoring
+
+The initial public proxy intermittently returned HTTP 503; a standard authenticated
+Iris tunnel reaches the same serving endpoint. All 20 smoke requests then completed,
+six reaching the 4000-token limit with repeated amino-acid text.
+
+A token-count audit found that the rendered prompt's 179 tokens became 180 at
+the completion API: the tokenizer prepended a second BOS token. Stop the
+incomplete `confirm` and `small` runs from runner revision `43f074efe4`, retain
+their outputs as invalidated setup evidence, and exclude them from all scores.
+Set `add_special_tokens=false` for rendered chat prompts and verify the API
+prompt count before restarting into a new output directory. Raw FASTA
+completion uses the API's single automatic BOS and is unaffected; its original
+run can be retained.
+
+The analysis reproduces the published Opus 5.5 real accuracy, shuffled accuracy,
+and family-averaged gap exactly (34.8607367%, 7.4617920%, +27.4062402 points).
+Bootstrap bounds vary slightly with random-number ordering; the estimator and
+10,000-family-resample design match the source. Permutation p-values use the
+finite-simulation correction `(hits + 1) / (10000 + 1)`.

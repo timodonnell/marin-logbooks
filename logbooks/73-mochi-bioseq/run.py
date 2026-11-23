@@ -164,6 +164,7 @@ def answer(client: httpx.Client, base_url: str, tokenizer, suite: str, q: Questi
         "max_tokens": q.max_tokens,
         "stop_token_ids": [128009, 128001],
         "skip_special_tokens": False,
+        "add_special_tokens": suite == "raw",
     }
     rec = {
         "model": "mochi-sft",
@@ -254,6 +255,7 @@ def main():
         "tokenizer_revision": TOKENIZER_REVISION,
         "temperature": 0.0,
         "enable_thinking": False,
+        "add_special_tokens": args.suite == "raw",
         "workers": args.workers,
         "inputs_sha256": {
             p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((args.upstream / "data").glob("*.tsv"))
