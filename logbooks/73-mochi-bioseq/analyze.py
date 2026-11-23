@@ -92,6 +92,12 @@ def audit_suite(upstream: Path, output: Path, suite: str) -> tuple[list[dict], l
         else:
             pred = probe.parse(d["text"], q.prefix, prefer_len=20 if suite == "recall" else 1, cut=probe.cut_off(d))
         assert pred == d["pred"], (suite, d["key"])
+        if suite == "recall":
+            exact = 0
+            while exact < min(len(pred), len(q.target)) and pred[exact] == q.target[exact]:
+                exact += 1
+            assert exact == d["exact_run"], d["key"]
+            assert len(pred) == d["written"] and len(q.target) == d["truth_available"], d["key"]
         d.update(
             valid=bool(pred) and d.get("stop") != "refusal",
             hit=bool(pred) and d.get("stop") != "refusal" and pred[0] == q.target[0],
@@ -177,6 +183,9 @@ def main():
                 results[suite]["H2_p_one_sided"] = float(p_one)
                 results[suite]["H2_pass"] = bool(rho > 0 and p_one < 0.01)
         elif suite == "recall":
+            frame[["id", "accession", "cut", "exact_run", "written", "truth_available", "stop"]].to_csv(
+                args.output / "recall_scores.tsv", sep="\t", index=False
+            )
             results[suite] = {
                 "questions": len(frame),
                 "valid": int(frame.valid.sum()),
