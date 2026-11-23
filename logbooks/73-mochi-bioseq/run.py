@@ -223,6 +223,14 @@ def identity(models: dict) -> list[tuple]:
     return [(m["id"], m["root"], m["max_model_len"]) for m in models["data"]]
 
 
+def models_snapshot(client: httpx.Client, base_url: str) -> dict:
+    # A capability URL is a credential; never include HTTP exceptions containing it.
+    response = client.get(base_url + "/models")
+    if response.status_code != 200:
+        raise RuntimeError(f"Model discovery returned HTTP {response.status_code}")
+    return response.json()
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--upstream", type=Path, required=True)
@@ -273,9 +281,7 @@ def main():
     done = {r["key"] for r in previous}
     todo = [q for q in items if q.key not in done]
     with httpx.Client(timeout=600) as client:
-        before_response = client.get(base_url + "/models")
-        before_response.raise_for_status()
-        before = before_response.json()
+        before = models_snapshot(client, base_url)
         assert before["data"][0]["id"] == MODEL
         (args.output / f"{args.suite}-models-start.json").write_text(json.dumps(before, indent=2))
         with out.open("a") as stream, ThreadPoolExecutor(args.workers) as pool:
@@ -288,9 +294,7 @@ def main():
                 errors += "error" in record
                 if i % 100 == 0 or i == len(todo):
                     LOG.info("%s: %d/%d new replies, %d transport failures", args.suite, i, len(todo), errors)
-        after_response = client.get(base_url + "/models")
-        after_response.raise_for_status()
-        after = after_response.json()
+        after = models_snapshot(client, base_url)
         (args.output / f"{args.suite}-models-end.json").write_text(json.dumps(after, indent=2))
         assert identity(before) == identity(after), "server identity changed"
 
