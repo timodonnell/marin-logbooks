@@ -32,6 +32,7 @@ PROTEIN_SETS = {
     "d_set": "d_set_sequences.tsv",
     "pilot": "sequences_pilot.tsv",
 }
+CONTACT_SUITES = ("contact", "contact_list")
 LOG = logging.getLogger(__name__)
 
 
@@ -118,7 +119,8 @@ def questions(upstream: Path, suite: str, output: Path) -> list[Question]:
                 )
             )
         return result
-    assert suite == "contact"
+    assert suite in CONTACT_SUITES
+    contact_prompt = "list" if suite == "contact_list" else "grid"
     # The upstream loader verifies each sequence against the structure used for truth.
     contact = runpy.run_path(str(upstream / "scripts/probe/contact_map.py"))
     truth_path = output / "contact_truth.json"
@@ -138,9 +140,9 @@ def questions(upstream: Path, suite: str, output: Path) -> list[Question]:
             Question(
                 name,
                 sequence,
-                contact["prompt"](sequence),
+                contact["PROMPTS"][contact_prompt](sequence),
                 "",
-                {"protein": name, "pdb": row["pdb"], "length": len(sequence), "prompt": "grid"},
+                {"protein": name, "pdb": row["pdb"], "length": len(sequence), "prompt": contact_prompt},
                 32000,
             )
         )
@@ -201,7 +203,7 @@ def answer(client: httpx.Client, base_url: str, tokenizer, suite: str, q: Questi
     if "error" in rec:
         return rec
     text, stopped = rec["text"], probe.cut_off(rec)
-    if suite == "contact":
+    if suite in CONTACT_SUITES:
         return rec
     if suite == "raw":
         pred = probe.parse_raw(text)
@@ -238,7 +240,7 @@ def main():
     ap.add_argument("--endpoint-file", type=Path, required=True)
     ap.add_argument("--tokenizer", type=Path, required=True)
     ap.add_argument("--output", type=Path, required=True)
-    ap.add_argument("--suite", choices=[*PROTEIN_SETS, "dna", "recall", "contact"], required=True)
+    ap.add_argument("--suite", choices=[*PROTEIN_SETS, "dna", "recall", *CONTACT_SUITES], required=True)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--limit", type=int)
     ap.add_argument("--run", action="store_true")

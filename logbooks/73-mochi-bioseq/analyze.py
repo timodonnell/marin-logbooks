@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from bioseq_probe import dna, probe
-from run import PROTEIN_SETS, questions
+from run import CONTACT_SUITES, PROTEIN_SETS, questions
 from scipy.stats import hypergeom, spearmanr
 
 
@@ -83,7 +83,7 @@ def audit_suite(upstream: Path, output: Path, suite: str) -> tuple[list[dict], l
     for d in saved:
         q = by_key[d["key"]]
         assert d["target"] == q.target
-        if suite == "contact":
+        if suite in CONTACT_SUITES:
             continue
         if suite == "raw":
             pred = probe.parse_raw(d["text"])
@@ -101,12 +101,14 @@ def audit_suite(upstream: Path, output: Path, suite: str) -> tuple[list[dict], l
     return saved, expected
 
 
-def contacts(upstream: Path, output: Path, saved: list[dict]) -> dict:
+def contacts(upstream: Path, output: Path, saved: list[dict], suite: str) -> dict:
     # Reuse pure upstream functions without running its plotting script at import time.
     source = ast.parse((upstream / "scripts/analysis/contact_map.py").read_text())
     definitions = ast.Module(
         body=[
-            node for node in source.body if isinstance(node, ast.FunctionDef) and node.name in ("grid", "band", "score")
+            node
+            for node in source.body
+            if isinstance(node, ast.FunctionDef) and node.name in ("grid", "pairs", "band", "score")
         ],
         type_ignores=[],
     )
@@ -118,7 +120,8 @@ def contacts(upstream: Path, output: Path, saved: list[dict]) -> dict:
     for d in saved:
         t = truth[d["protein"]]
         true = np.array([[int(c) for c in line] for line in t["map"]])
-        pred, note = namespace["grid"](d["text"], len(true))
+        parser = "pairs" if suite == "contact_list" else "grid"
+        pred, note = namespace[parser](d["text"], len(true))
         row = {
             "protein": d["protein"],
             "pdb": d["pdb"],
@@ -130,7 +133,7 @@ def contacts(upstream: Path, output: Path, saved: list[dict]) -> dict:
             row.update({k: v for k, v in namespace["score"](pred, true, 24, 10**6).items() if k != "sep_probs"})
         rows.append(row)
     frame = pd.DataFrame(rows)
-    frame.to_csv(output / "contact_scores.tsv", sep="\t", index=False)
+    frame.to_csv(output / f"{suite}_scores.tsv", sep="\t", index=False)
     result = {}
     groups = dict(tuple(frame.groupby("group")))
     groups["all recent"] = frame[frame.group != "famous"]
@@ -140,7 +143,7 @@ def contacts(upstream: Path, output: Path, saved: list[dict]) -> dict:
         correct = int(valid.n_correct.sum()) if "n_correct" in valid else 0
         result[name] = {
             "asked": len(group),
-            "valid_grids": len(valid),
+            "valid_maps": len(valid),
             "predicted_long_range": n_pred,
             "correct_long_range": correct,
             "precision": correct / n_pred if n_pred else None,
@@ -152,7 +155,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--upstream", required=True, type=Path)
     ap.add_argument("--output", required=True, type=Path)
-    ap.add_argument("--suites", nargs="+", default=[*PROTEIN_SETS, "dna", "recall", "contact"])
+    ap.add_argument("--suites", nargs="+", default=[*PROTEIN_SETS, "dna", "recall", *CONTACT_SUITES])
     args = ap.parse_args()
     results, frames = {}, {}
     for suite in args.suites:
@@ -196,7 +199,7 @@ def main():
                 cell["D1_pass"] = cell["p_one_sided"] < 0.001 and cell["low"] > 5
                 cell["D2_pass"] = cell["exact20_real"] >= 3 and cell["exact20_shuffled"] == 0
         else:
-            results[suite] = contacts(args.upstream, args.output, saved)
+            results[suite] = contacts(args.upstream, args.output, saved, suite)
         results[suite]["transport_attempts"] = sum(len(d["attempts"]) for d in saved)
         results[suite]["truncated_replies"] = int(frame.stop.isin(probe.CUT_OFF).sum())
         results[suite]["thinking_replies"] = sum("<|start_think|>" in d.get("raw_text", "") for d in saved)
