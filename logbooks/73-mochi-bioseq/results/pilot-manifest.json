@@ -1,0 +1,33 @@
+{
+  "upstream_revision": "1c0eb30ec4aacc672386ec5e8a0d7e9f17e8e649",
+  "runner_sha256": "c137dc237abef4d7d8bdbcc7810ac8a208dc634b3ce3828b93e0ac45d3c16944",
+  "tokenizer_revision": "3f6879acdaf3dae7874b2d48c7d11b9d8c6faf09",
+  "temperature": 0.0,
+  "enable_thinking": false,
+  "add_special_tokens": false,
+  "workers": 32,
+  "inputs_sha256": {
+    "confirm_sequences.tsv": "a7e015c8c9fc6221a716ab188a26df67ac931c1f1b4b9c823d2548e060b4e595",
+    "contact_map_candidates.tsv": "379c11edfe6c5098b79f39a610595675d09be14fdabb74935051bceee205f561",
+    "contact_map_proteins.tsv": "c042e839eb46e7c0de0db1d8a3f12b62f6288e21b1c2fb0e214f7b868fc30669",
+    "d_set_sequences.tsv": "ed7fe90d78d49afe7e6f8b010c1d04c5056056eaae0427284bfe3aad4eb2ba89",
+    "dna_confirm_windows.tsv": "d0ab65eebcc748a1a0ef32f25ad8ce3d5cd0c8ab0707575f6fc594299c77c5d3",
+    "dna_windows_bacterial.tsv": "eaba4d1d723bd6f197f92e1cc36770223486ddfa9d4de76a0ec8d3910d3086a8",
+    "dna_windows_genomic.tsv": "b352527e978486493adebf02fdd126000d200234be4a7ca5f72356e5ed24fd5d",
+    "families_pilot.tsv": "8dd99c15cdfeac75e6707371d6dfe9af435cdfbdca94086e6b1e10d624d613d7",
+    "sequence_groups.tsv": "8e282cdb8048a4dfc4bf24ba2036a086e67a17b36b8d66316c2b5c7cf2504054",
+    "sequences_pilot.tsv": "41424ff4db3b1f0d42042f28f8ee225aaa64a46a9afa7a975871654a89dc2f49",
+    "small_family_sequences.tsv": "2088b2d7163316d9094fd6ce5138db69a5e96e0f17ce5e9fb6a5f2168e9d3643"
+  },
+  "tokenizer_sha256": {
+    "chat_template.jinja": "6f55d2ce5974bbcc5d1636c564cddddc945465edecc56e3a391486268af4d930",
+    "tokenizer.json": "6a61ca2105a54e9984169b409581f31cc50330d1b47104af13c221b05e462e45",
+    "tokenizer_config.json": "dd3eb712bc4023da31bff868197aec661c79df35b59ee287aad4cfd17cdc9413"
+  },
+  "packages": {
+    "httpx": "0.28.1",
+    "transformers": "5.24.0",
+    "numpy": "2.5.5",
+    "pandas": "3.1.1"
+  }
+}

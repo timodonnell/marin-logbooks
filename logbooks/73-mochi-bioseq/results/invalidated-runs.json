@@ -1,0 +1,10 @@
+{
+  "confirm": {
+    "completed": 764,
+    "reason": "duplicate BOS in pre-rendered chat, excluded from scientific results"
+  },
+  "small": {
+    "completed": 875,
+    "reason": "duplicate BOS in pre-rendered chat, excluded from scientific results"
+  }
+}

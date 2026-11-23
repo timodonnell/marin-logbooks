@@ -1,0 +1,31 @@
+{
+  "questions": 6680,
+  "valid": 6676,
+  "families": 167,
+  "real": 34.8607367475292,
+  "shuffled": 7.461792028768355,
+  "gap": 27.406240151276396,
+  "low": 24.7589032461393,
+  "high": 30.160731169240464,
+  "p_one_sided": 9.999000099990002e-05,
+  "H1_pass": true,
+  "nonanswers_wrong": {
+    "gap": 27.395209580838326,
+    "low": 24.759730538922152,
+    "high": 30.149700598802397,
+    "p_one_sided": 9.999000099990002e-05
+  },
+  "both_answers_valid": {
+    "gap": 27.436180271036875,
+    "low": 24.780924992121022,
+    "high": 30.196974472108412,
+    "p_one_sided": 9.999000099990002e-05
+  },
+  "exact10_real": 12,
+  "exact10_shuffled": 0,
+  "exact10_expected_independent_positions": 0.5706195602983691,
+  "H3_pass": false,
+  "positive_families": 157,
+  "nonanswers_real": 1,
+  "nonanswers_shuffled": 3
+}
